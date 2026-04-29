@@ -1,0 +1,46 @@
+# Virtual environment
+.venv/
+
+
+# Quarto build files
+.quarto/
+
+
+# Data files
+data/
+lightcast_job_postings.csv
+lightcast_cleaned.csv
+
+# Python files (scripts, notebooks)
+*.py
+*.ipynb
+**/*.quarto_ipynb
+
+# Cache
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+
+# Extra folders to ignore
+my-website/
+/.quarto/
+
+Ricardo/
+Ricardo_docs/
+data/lightcast_job_postings.csv
+data/lightcast_job_postings.csv
+data/lightcast_job_postings.csv
+
+lightcast_job_postings.csv
+venv/quarto-*.deb
+
+# Auto-downloaded data files (regenerated from Google Drive on render)
+files-2/job_market_data.csv
+files-2/lightcast_cleaned.csv
+data/lightcast_job_postings.csv
+EOF
+
+job_market_data.csv
+*.csv
