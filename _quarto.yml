@@ -8,36 +8,8 @@ website:
   title: "AD688 Team 1 Spring 2026"
   navbar:
     left:
-      - href: index.qmd
-        text: Home
-      - href: about.qmd
-        text: About
       - href: about_me.qmd
         text: About Me
-      - href: data_cleaning.qmd
-        text: Data Cleaning
-      - text: Research Questions
-        menu:
-          - href: ricardo.qmd
-            text: "Which Cities/States Have the Highest Job Growth?"
-          - href: tianyi.qmd
-            text: "Are Remote Jobs Increasing or Decreasing?"
-          - href: zichen.qmd
-            text: "Do Tech Hubs Still Dominate Hiring?"
-          - href: yingyi.qmd
-            text: "Urban vs. Rural Job Markets for AI & Non-AI Careers"   
-      - text: ML, BA & DS trends
-        menu:
-          - href: omar.qmd
-            text: "Most In-Demand Skills for DS, BA & ML Roles"   
-          - href: ai_ml_evolution.qmd
-            text: "Have job descriptions evolved in 2024 to require AI/ML expertise?"
-          - href: industry_hiring.qmd
-            text: "What industries are hiring the most data scientists and why?"
-          - href: ba_career_outlook.qmd
-            text: "What is the career outlook for business analytics professionals?"
-      - href: references.qmd  
-        text: References 
 
 format:
   html:
@@ -46,4 +18,3 @@ format:
       - brand
     css: styles.css
     toc: true
-    bibliography: references.bib
