@@ -2,22 +2,43 @@
   {
     "objectID": "about_me.html",
     "href": "about_me.html",
-    "title": "Navigating the Job Market",
+    "title": "Curriculum Vitae",
     "section": "",
-    "text": "We are Team 1 of AD688 (Spring 2026) five analysts exploring how the U.S. job market is evolving in the age of AI, remote work, and shifting industry demand. Drawing on thousands of job postings from the Lightcast dataset, we investigate where the opportunities are, which skills matter most, and how geography and industry shape career outcomes today.6666355\nEach team member owns a research question below. Click any card to dive into the full analysis."
+    "text": "📧 rmfconde@bu.edu • 📱 +1 617-935-7407 • 📍 Boston, MA •\n  LinkedIn"
   },
   {
-    "objectID": "about_me.html#about-this-project",
-    "href": "about_me.html#about-this-project",
-    "title": "Navigating the Job Market",
-    "section": "",
-    "text": "We are Team 1 of AD688 (Spring 2026) five analysts exploring how the U.S. job market is evolving in the age of AI, remote work, and shifting industry demand. Drawing on thousands of job postings from the Lightcast dataset, we investigate where the opportunities are, which skills matter most, and how geography and industry shape career outcomes today.6666355\nEach team member owns a research question below. Click any card to dive into the full analysis."
+    "objectID": "about_me.html#qualifications",
+    "href": "about_me.html#qualifications",
+    "title": "Curriculum Vitae",
+    "section": "Qualifications",
+    "text": "Qualifications\n\nQuantitative background in Mathematical Engineering with strong foundations in statistics, optimization, and applied analytics\nExperience in data analysis and modeling through academic projects and a research internship — including decision trees, network analysis, and financial modeling\nProgramming proficiency in Python, R, SQL, and Excel\nProactive, disciplined, and motivated to contribute in data-driven professional environments"
   },
   {
-    "objectID": "about_me.html#at-a-glance",
-    "href": "about_me.html#at-a-glance",
-    "title": "Navigating the Job Market",
-    "section": "At a glance",
-    "text": "At a glance"
+    "objectID": "about_me.html#education",
+    "href": "about_me.html#education",
+    "title": "Curriculum Vitae",
+    "section": "Education",
+    "text": "Education\n\nBoston University — Advanced Graduate Certificate in Applied Business Analytics\nBoston, MA, USA | Expected May 2026\nCoursework: Data Mining, Marketing Analytics, Enterprise Risk Analytics, Data Visualization, SQL & R for Business Analytics\n\n\nCEU San Pablo University — Bachelor of Mathematical Engineering\nMadrid, Spain | Expected July 2026\nCoursework: Probability and Statistics, Inferential Statistics, Data Analysis, Optimization, Stochastic Calculus, Financial Mathematics"
+  },
+  {
+    "objectID": "about_me.html#relevant-projects",
+    "href": "about_me.html#relevant-projects",
+    "title": "Curriculum Vitae",
+    "section": "Relevant Projects",
+    "text": "Relevant Projects\n\nLoan Amortization Models Project\nCEU San Pablo University\n\nBuilt an interactive tool to compare French, German, and American loan amortization models\nApplied financial mathematics and data analysis to generate customized repayment scenarios\nSupported data-driven financial decision-making\n\n\n\nPageRank Algorithm Project\nCEU San Pablo University\n\nImplemented the PageRank algorithm to analyze network structures and rank node importance\nApplied linear algebra and graph theory to solve real-world data ranking problems\nDemonstrated practical applications of algorithms in data-driven decision contexts"
+  },
+  {
+    "objectID": "about_me.html#work-leadership-experience",
+    "href": "about_me.html#work-leadership-experience",
+    "title": "Curriculum Vitae",
+    "section": "Work & Leadership Experience",
+    "text": "Work & Leadership Experience\n\nResearch Intern — Spanish National Research Council (CSIC)\nMadrid, Spain | July 2025\n\nDesigned and implemented a decision tree model to guide the selection of appropriate statistical tests\nApplied probability, inferential statistics, and data analysis to improve analytical workflows\nDeveloped practical analytical tools that contributed to data-driven decision-making within a research environment"
+  },
+  {
+    "objectID": "about_me.html#skills-activities-interests",
+    "href": "about_me.html#skills-activities-interests",
+    "title": "Curriculum Vitae",
+    "section": "Skills, Activities & Interests",
+    "text": "Skills, Activities & Interests\n\n\n\nCategory\nDetails\n\n\n\n\nProgramming\nPython, R, SQL (basic)\n\n\nTools\nExcel, Data Visualization, Business Intelligence\n\n\nQuantitative\nStatistics, Optimization, Stochastic Modeling\n\n\nLanguages\nSpanish (native), English (fluent)\n\n\nInterests\nCinema, Chess\n\n\n\n\n\n  \n     📄 Download CV as PDF"
   }
 ]
