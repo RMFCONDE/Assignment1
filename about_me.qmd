@@ -1,23 +1,80 @@
 ---
-title: "Navigating the Job Market"
-subtitle: "A data-driven analysis of hiring trends, skill demand, and career outlooks from the Lightcast job postings dataset."
-title-block-banner: "#1a2b4a"
-title-block-banner-color: "#ffffff"
-page-layout: full
-toc: false
+title: "Curriculum Vitae"
 format:
   html:
-    css: styles.css
+    toc: true
+    toc-depth: 2
 ---
 
-::: {.hero-intro}
+```{=html}
+<div style="text-align:center; margin-bottom:1.5em;">
+  <h1 style="margin-bottom:0.2em;">Ricardo Marin Fernandez Conde</h1>
+  <p>📧 rmfconde@bu.edu • 📱 +1 617-935-7407 • 📍 Boston, MA •
+  <a href="https://linkedin.com/in/ricardomfdezconde" target="_blank">LinkedIn</a></p>
+</div>
+```
 
-## About this project
+## Qualifications
 
-We are **Team 1 of AD688 (Spring 2026)** five analysts exploring how the U.S. job market is evolving in the age of AI, remote work, and shifting industry demand. Drawing on **thousands of job postings** from the Lightcast dataset, we investigate where the opportunities are, which skills matter most, and how geography and industry shape career outcomes today.6666355
+- Quantitative background in Mathematical Engineering with strong foundations in statistics, optimization, and applied analytics
+- Experience in data analysis and modeling through academic projects and a research internship — including decision trees, network analysis, and financial modeling
+- Programming proficiency in **Python**, **R**, **SQL**, and **Excel**
+- Proactive, disciplined, and motivated to contribute in data-driven professional environments
 
-Each team member owns a research question below. Click any card to dive into the full analysis.
+## Education
 
-:::
+### Boston University — *Advanced Graduate Certificate in Applied Business Analytics*
+**Boston, MA, USA** | Expected May 2026
 
-## At a glance {.unnumbered}
+Coursework: Data Mining, Marketing Analytics, Enterprise Risk Analytics, Data Visualization, SQL & R for Business Analytics
+
+### CEU San Pablo University — *Bachelor of Mathematical Engineering*
+**Madrid, Spain** | Expected July 2026
+
+Coursework: Probability and Statistics, Inferential Statistics, Data Analysis, Optimization, Stochastic Calculus, Financial Mathematics
+
+## Relevant Projects
+
+### Loan Amortization Models Project
+*CEU San Pablo University*
+
+- Built an interactive tool to compare French, German, and American loan amortization models
+- Applied financial mathematics and data analysis to generate customized repayment scenarios
+- Supported data-driven financial decision-making
+
+### PageRank Algorithm Project
+*CEU San Pablo University*
+
+- Implemented the PageRank algorithm to analyze network structures and rank node importance
+- Applied linear algebra and graph theory to solve real-world data ranking problems
+- Demonstrated practical applications of algorithms in data-driven decision contexts
+
+## Work & Leadership Experience
+
+### Research Intern — *Spanish National Research Council (CSIC)*
+**Madrid, Spain** | July 2025
+
+- Designed and implemented a decision tree model to guide the selection of appropriate statistical tests
+- Applied probability, inferential statistics, and data analysis to improve analytical workflows
+- Developed practical analytical tools that contributed to data-driven decision-making within a research environment
+
+## Skills, Activities & Interests
+
+| Category | Details |
+|---|---|
+| **Programming** | Python, R, SQL (basic) |
+| **Tools** | Excel, Data Visualization, Business Intelligence |
+| **Quantitative** | Statistics, Optimization, Stochastic Modeling |
+| **Languages** | Spanish (native), English (fluent) |
+| **Interests** | Cinema, Chess |
+
+---
+
+```{=html}
+<div style="text-align:center; margin-top:2em;">
+  <a href="Ricardo_Marin_FdezConde_CV.pdf" download
+     style="padding:10px 24px; background:#2563eb; color:white; border-radius:6px; text-decoration:none; font-weight:600;">
+     📄 Download CV as PDF
+  </a>
+</div>
+```
