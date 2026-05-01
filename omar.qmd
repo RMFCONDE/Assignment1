@@ -1,0 +1,244 @@
+---
+title: "Most In-Demand Skills for Data Science, Business Analytics, and ML Roles"
+author: "Omar Mohd Haris"
+date: today
+format: 
+  html:
+    bibliography: references.bib
+    toc: true
+jupyter: python3
+execute: 
+    echo: false
+---
+## Introduction
+
+The data science and analytics job market continues to expand rapidly, with the U.S. Bureau of Labor Statistics projecting 36% employment growth for data scientists from 2023 to 2033. As the field matures, understanding which specific skills employers demand is critical for job seekers, educators, and program designers alike.
+
+Previous research has examined skill requirements across analytics roles. @radovilsky2018skills conducted a comparative analysis of 1,050 job postings and found that data science roles emphasize computer systems, algorithms, and programming, while business data analytics roles place greater weight on statistical analysis and decision-making support. Similarly, @verma2019investigation performed a content analysis of job advertisements and identified SQL, Excel, and visualization tools as core requirements across analytics positions. More recently, @levendis2025business identified the most sought-after skills for business analytics roles, highlighting both technical proficiency and communication as key employer expectations.
+
+This analysis extends that body of work by examining job postings from the Lightcast dataset to identify the most in-demand skills across Data Science, Business Analytics, Machine Learning, and related roles.
+
+## Data Loading
+
+We load the cleaned Lightcast dataset produced by our shared [Data Cleaning](data_cleaning.qmd) page. This file has already been deduplicated, date-parsed, and had its skills columns split into Python lists, so we can jump straight into analysis.
+
+```{python}
+import pandas as pd
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+
+df = pd.read_csv("data/lightcast_cleaned.csv", parse_dates=["posted", "expired"])
+
+# Skills columns are stored as pipe-separated strings in the CSV — split back into lists
+for col in ["skills_name", "specialized_skills_name", "software_skills_name"]:
+    if col in df.columns:
+        df[col] = df[col].fillna("").apply(lambda s: s.split("|") if s else [])
+
+print(f"Total postings: {len(df):,}")
+```
+
+## Filtering for Relevant Roles
+
+To focus on data science, business analytics, and ML roles, we categorize each posting using keywords matched against the `title_name` (Lightcast's standardized job title) and `onet_name` (Bureau of Labor Statistics occupation classification) columns. This dual-column approach ensures we capture roles that may have non-standard titles but are classified under relevant O*NET codes.
+
+```{python}
+ds_ml_titles = ['data scien', 'machine learn', 'deep learn', 'ai engineer',
+                'nlp engineer', 'computer vision']
+ba_titles = ['business intel', 'business analy', 'bi analyst', 'bi developer']
+da_titles = ['data analy']
+de_titles = ['data engineer']
+
+def categorize(row):
+    t = str(row['title_name']).lower()
+    o = str(row['onet_name']).lower()
+    c = t + ' ' + o
+    if any(k in c for k in ds_ml_titles): return 'Data Science / ML'
+    if any(k in c for k in ba_titles): return 'Business Analytics / BI'
+    if any(k in c for k in da_titles): return 'Data Analytics'
+    if any(k in c for k in de_titles): return 'Data Engineering'
+    return None
+
+df['role_category'] = df.apply(categorize, axis=1)
+df_filtered = df[df['role_category'].notna()].copy()
+print(f"Filtered to {len(df_filtered):,} relevant postings ({len(df_filtered)/len(df)*100:.1f}%)\n")
+
+print("Role distribution:")
+print(df_filtered['role_category'].value_counts().to_string())
+```
+
+## Top 30 Most In-Demand Skills (Overall)
+
+We explode the skill lists so that each skill–posting pair becomes its own row, then count the frequency of each skill across all filtered postings. This gives us the overall demand landscape. This approach is consistent with how @radovilsky2018skills extracted and categorized skill keywords from job posting text.
+
+```{python}
+all_skills = df_filtered['skills_name'].explode().dropna()
+all_skills = all_skills[all_skills != '']
+all_counts = all_skills.value_counts()
+
+print(f"\n{'='*65}")
+print(f"TOP 30 MOST IN-DEMAND SKILLS (DS + BA + ML + DE)")
+print(f"{'='*65}")
+print(f"{'Rank':<5} {'Skill':<40} {'Count':>7} {'% Posts':>8}")
+print(f"{'-'*65}")
+for r,(s,c) in enumerate(all_counts.head(30).items(),1):
+    print(f"{r:<5} {s:<40} {c:>7,} {c/len(df_filtered)*100:>7.1f}%")
+```
+
+```{python}
+# Interactive bar chart: Top 20 overall skills
+t20 = all_counts.head(20).reset_index()
+t20.columns = ['Skill', 'Count']
+t20['Pct'] = (t20['Count'] / len(df_filtered) * 100).round(1)
+
+fig = px.bar(
+    t20, x='Count', y='Skill', orientation='h',
+    color='Count', color_continuous_scale='Viridis',
+    title='Top 20 Most In-Demand Skills (All Roles)',
+    hover_data={'Pct': ':.1f', 'Count': ':,'},
+    labels={'Count': 'Number of Postings', 'Pct': '% of Postings'}
+)
+fig.update_layout(
+    yaxis=dict(autorange='reversed'),
+    height=600, coloraxis_showscale=False,
+    margin=dict(l=200, r=40, t=60, b=40)
+)
+fig.show()
+```
+
+## Top 20 Software and Tools
+
+Lightcast separately tags software and tool skills in the `software_skills_name` column, allowing us to isolate the specific technologies employers require. The dominance of SQL in this ranking aligns with findings from @verma2019investigation, who identified SQL as the most frequently listed technical requirement in analytics job advertisements.
+
+```{python}
+sw = df_filtered['software_skills_name'].explode().dropna()
+sw = sw[sw != '']
+sw_counts = sw.value_counts()
+
+print(f"\n{'='*65}")
+print(f"TOP 20 SOFTWARE / TOOLS")
+print(f"{'='*65}")
+for r,(s,c) in enumerate(sw_counts.head(20).items(),1):
+    print(f"{r:<5} {s:<40} {c:>7,} {c/len(df_filtered)*100:>7.1f}%")
+```
+
+```{python}
+# Interactive bar chart: Top 15 software / tools
+t15 = sw_counts.head(15).reset_index()
+t15.columns = ['Software', 'Count']
+t15['Pct'] = (t15['Count'] / len(df_filtered) * 100).round(1)
+
+fig = px.bar(
+    t15, x='Count', y='Software', orientation='h',
+    color='Count', color_continuous_scale='Plasma',
+    title='Top 15 Software & Tools',
+    hover_data={'Pct': ':.1f', 'Count': ':,'},
+    labels={'Count': 'Number of Postings', 'Pct': '% of Postings'}
+)
+fig.update_layout(
+    yaxis=dict(autorange='reversed'),
+    height=550, coloraxis_showscale=False,
+    margin=dict(l=200, r=40, t=60, b=40)
+)
+fig.show()
+```
+
+## Top 15 Specialized Technical Skills
+
+```{python}
+# Interactive bar chart: Top 15 specialized technical skills
+spec = df_filtered['specialized_skills_name'].explode().dropna()
+spec = spec[spec != '']
+spec_counts = spec.value_counts().head(15).reset_index()
+spec_counts.columns = ['Skill', 'Count']
+spec_counts['Pct'] = (spec_counts['Count'] / len(df_filtered) * 100).round(1)
+
+fig = px.bar(
+    spec_counts, x='Count', y='Skill', orientation='h',
+    color='Count', color_continuous_scale='Cividis',
+    title='Top 15 Specialized Technical Skills',
+    hover_data={'Pct': ':.1f', 'Count': ':,'},
+    labels={'Count': 'Number of Postings', 'Pct': '% of Postings'}
+)
+fig.update_layout(
+    yaxis=dict(autorange='reversed'),
+    height=550, coloraxis_showscale=False,
+    margin=dict(l=200, r=40, t=60, b=40)
+)
+fig.show()
+```
+
+## Skills Breakdown by Role Category
+
+Here we compare the top 10 skills within each role category. This comparison reveals important differences: Data Science/ML roles prioritize Python, Machine Learning, and Statistics, while Business Analytics/BI roles emphasize Communication, Management, and Business Process knowledge. This distinction echoes the findings of @radovilsky2018skills, who noted that data science emphasizes computer systems, algorithms, and programming skills, whereas business data analytics has a substantial focus on statistical and quantitative analysis of data. @levendis2025business similarly found that business analytics employers seek a blend of technical and communication skills.
+
+```{python}
+for cat in ['Data Science / ML','Business Analytics / BI','Data Analytics','Data Engineering']:
+    sub = df_filtered[df_filtered['role_category']==cat]
+    if len(sub) < 10: continue
+    cs = sub['skills_name'].explode().dropna()
+    cs = cs[cs != '']
+    top = cs.value_counts().head(10)
+    print(f"\n  {'='*55}")
+    print(f"  {cat} ({len(sub):,} postings)")
+    print(f"  {'='*55}")
+    for r,(s,c) in enumerate(top.items(),1):
+        print(f"  {r:>3}. {s:<35} {c:>6,} ({c/len(sub)*100:.1f}%)")
+```
+
+## Key Skills by Role Category
+
+The grouped bar chart below compares the prevalence of key skills across the four role categories. Hover any bar to see exact percentages.
+
+```{python}
+# Interactive grouped bar chart: key skills by role category
+key_skills = ['Python (Programming Language)','SQL (Programming Language)',
+              'Machine Learning','Data Analysis','Tableau (Business Intelligence Software)',
+              'R (Programming Language)','Power BI','Statistics','Microsoft Excel','Data Visualization']
+cats = [c for c in ['Data Science / ML','Business Analytics / BI','Data Analytics','Data Engineering']
+        if len(df_filtered[df_filtered['role_category']==c]) > 0]
+
+records = []
+for cat in cats:
+    sub = df_filtered[df_filtered['role_category']==cat]
+    cc = sub['skills_name'].explode().value_counts()
+    for s in key_skills:
+        records.append({
+            'Role': cat,
+            'Skill': s,
+            'Pct': round(cc.get(s, 0) / len(sub) * 100, 1)
+        })
+
+cmp_df = pd.DataFrame(records)
+
+fig = px.bar(
+    cmp_df, x='Pct', y='Skill', color='Role',
+    orientation='h', barmode='group',
+    title='Key Skills by Role Category',
+    labels={'Pct': '% of Postings', 'Skill': '', 'Role': 'Role Category'},
+    color_discrete_sequence=['#2196F3', '#FF5722', '#4CAF50', '#9C27B0']
+)
+fig.update_layout(
+    yaxis=dict(autorange='reversed', categoryorder='array', categoryarray=key_skills[::-1]),
+    height=650,
+    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='center', x=0.5),
+    margin=dict(l=240, r=40, t=80, b=40)
+)
+fig.show()
+```
+
+## Conclusion
+
+Our analysis of the Lightcast job postings dataset reveals several key findings:
+
+1. **SQL is the universal requirement** — appearing in roughly 30% of all postings, it is the single most demanded technical skill across every role category.
+
+2. **Data Science/ML roles are distinctly more technical** — Python, Machine Learning, R, and Statistics are all significantly more prevalent in DS/ML postings compared to BA/BI roles, confirming the skill divergence identified by @radovilsky2018skills.
+
+3. **Communication and soft skills dominate BA/BI roles** — Communication, Management, and Problem Solving rank highest for Business Analytics, consistent with the findings of @levendis2025business that employers value both technical and interpersonal competencies.
+
+4. **The BI tool landscape is a three-way race** — Tableau, Power BI, and Excel all appear in similar proportions, suggesting employers value familiarity with multiple visualization platforms rather than expertise in just one.
+
+These findings have practical implications for analytics program curricula and for job seekers looking to align their skill development with market demand, as emphasized by @verma2019investigation.
+
+## References

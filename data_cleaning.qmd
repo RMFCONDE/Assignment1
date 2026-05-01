@@ -1,0 +1,253 @@
+---
+title: "Data Cleaning"
+author: "AD688 Team 1"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: show
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Overview
+
+This page documents every cleaning step applied to the raw Lightcast job postings dataset. All subsequent research question pages load the resulting cleaned file (`data/lightcast_cleaned.csv`) so that our analyses start from a consistent, shared foundation.
+
+**Raw file:** `data/lightcast_job_postings.csv`
+**Output file:** `data/lightcast_cleaned.csv`
+
+## 1. Load the raw data
+
+```{python}
+import pandas as pd
+import numpy as np
+import json
+import os
+
+RAW_PATH = "data/lightcast_job_postings.csv"
+OUT_DIR = "data"
+OUT_PATH = os.path.join(OUT_DIR, "lightcast_cleaned.csv")
+
+os.makedirs(OUT_DIR, exist_ok=True)
+
+df_raw = pd.read_csv(RAW_PATH, low_memory=False)
+print(f"Raw shape: {df_raw.shape[0]:,} rows x {df_raw.shape[1]} columns")
+```
+
+## 2. Select the columns our team actually uses
+
+The raw file has many columns we don't need. We keep only those referenced across the five research questions (skills, industry, geography, remote work, salary, education, timing).
+
+```{python}
+keep_cols = [
+    # Identifiers & timing
+    "ID", "POSTED", "EXPIRED", "DURATION",
+    # Job info
+    "TITLE_NAME", "ONET_NAME", "NAICS2_NAME", "NAICS_2022_2_NAME",
+    "COMPANY_NAME", "EMPLOYMENT_TYPE_NAME",
+    # Skills
+    "SKILLS_NAME", "SPECIALIZED_SKILLS_NAME", "SOFTWARE_SKILLS_NAME",
+    # Education & experience
+    "MIN_EDULEVELS_NAME", "MIN_YEARS_EXPERIENCE", "MAX_YEARS_EXPERIENCE",
+    # Geography
+    "STATE_NAME", "CITY_NAME", "COUNTY_NAME", "MSA_NAME",
+    # Remote work
+    "REMOTE_TYPE_NAME", "MODELED_DURATION",
+    # Salary
+    "SALARY", "SALARY_FROM", "SALARY_TO",
+]
+
+# Only keep columns that actually exist in the raw file
+available = [c for c in keep_cols if c in df_raw.columns]
+missing = [c for c in keep_cols if c not in df_raw.columns]
+
+df = df_raw[available].copy()
+
+print(f"Kept {len(available)} columns.")
+if missing:
+    print(f"Note: {len(missing)} requested columns not present: {missing}")
+```
+
+## 3. Standardize column names
+
+Lowercase, underscore-separated names are easier to type and less error-prone across teammates.
+
+```{python}
+df.columns = df.columns.str.lower()
+df.head(2)
+```
+
+## 4. Parse date columns
+
+`posted` and `expired` come in as strings. Parsing them now lets every downstream page do time-based filtering without reparsing.
+
+```{python}
+for col in ["posted", "expired"]:
+    if col in df.columns:
+        df[col] = pd.to_datetime(df[col], errors="coerce")
+
+# Derived time features the team uses often
+if "posted" in df.columns:
+    df["posted_year"] = df["posted"].dt.year
+    df["posted_month"] = df["posted"].dt.to_period("M").astype(str)
+
+df[["posted", "expired", "posted_year", "posted_month"]].head(3)
+```
+
+## 5. Drop rows with no posting date or no title
+
+A row missing both a date and a job title can't contribute to any of our research questions.
+
+```{python}
+before = len(df)
+df = df.dropna(subset=["posted", "title_name"])
+print(f"Dropped {before - len(df):,} rows missing posted date or title. {len(df):,} remain.")
+```
+
+## 6. Deduplicate
+
+Lightcast sometimes includes the same posting more than once. We dedupe on `id` when available, otherwise on the combination of title + company + posted date.
+
+```{python}
+before = len(df)
+if "id" in df.columns:
+    df = df.drop_duplicates(subset=["id"])
+else:
+    df = df.drop_duplicates(subset=["title_name", "company_name", "posted"])
+print(f"Dropped {before - len(df):,} duplicate rows. {len(df):,} remain.")
+```
+
+## 7. Clean salary fields
+
+Salaries have outliers (e.g., hourly rates mis-coded as annual, or placeholder values like `1` or `999999`). We clip to a sensible annual range and flag valid salary rows.
+
+```{python}
+for col in ["salary", "salary_from", "salary_to"]:
+    if col in df.columns:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+        # Reasonable annual salary range for US professional roles
+        df.loc[(df[col] < 20_000) | (df[col] > 500_000), col] = np.nan
+
+df["has_salary"] = df["salary"].notna() if "salary" in df.columns else False
+print(f"Rows with valid salary: {df['has_salary'].sum():,} ({df['has_salary'].mean():.1%})")
+```
+
+## 8. Standardize remote work categories
+
+`remote_type_name` has inconsistent casing and a mix of nulls. We collapse it to three clean buckets: `Remote`, `Hybrid`, `On-site`.
+
+```{python}
+def standardize_remote(x):
+    if pd.isna(x):
+        return "On-site"  # Lightcast convention: null means not flagged as remote
+    x = str(x).strip().lower()
+    if "remote" in x:
+        return "Remote"
+    if "hybrid" in x:
+        return "Hybrid"
+    return "On-site"
+
+if "remote_type_name" in df.columns:
+    df["remote_category"] = df["remote_type_name"].apply(standardize_remote)
+    print(df["remote_category"].value_counts())
+```
+
+## 9. Clean skills columns
+
+Lightcast stores skills as JSON arrays inside string columns. The raw values look like `["Python", "SQL", "Machine Learning"]` (sometimes with extra whitespace or newlines). We parse the JSON properly so each row ends up as a clean list of skill strings — no surrounding quotes, no leftover brackets, no blank entries.
+
+```{python}
+def split_skills(x):
+    """Parse a Lightcast skills cell into a clean list of skill strings."""
+    if pd.isna(x):
+        return []
+    s = str(x).strip()
+    if not s:
+        return []
+    # Lightcast raw format is a JSON array — try that first.
+    try:
+        parsed = json.loads(s)
+        if isinstance(parsed, list):
+            return [str(item).strip() for item in parsed if str(item).strip()]
+    except (json.JSONDecodeError, ValueError):
+        pass
+    # Fallback for rare rows that use pipe or comma separators.
+    s = s.replace("|", ",")
+    return [
+        t.strip().strip('"').strip("'")
+        for t in s.split(",")
+        if t.strip() and t.strip() not in ("[", "]")
+    ]
+
+for col in ["skills_name", "specialized_skills_name", "software_skills_name"]:
+    if col in df.columns:
+        df[col] = df[col].apply(split_skills)
+
+# Quick sanity check
+print("Sample parsed skills:")
+for skills in df["skills_name"].head(3):
+    print(f"  {skills[:5]}{'...' if len(skills) > 5 else ''}")
+```
+
+## 10. Standardize geography
+
+State names and city names sometimes have trailing whitespace or inconsistent casing.
+
+```{python}
+for col in ["state_name", "city_name", "county_name", "msa_name"]:
+    if col in df.columns:
+        df[col] = df[col].astype(str).str.strip().replace({"nan": np.nan, "": np.nan})
+```
+
+## 11. Summary of the cleaned dataset
+
+```{python}
+print(f"Final shape: {df.shape[0]:,} rows x {df.shape[1]} columns")
+print(f"Date range: {df['posted'].min().date()} to {df['posted'].max().date()}")
+print(f"Unique job titles: {df['title_name'].nunique():,}")
+if "state_name" in df.columns:
+    print(f"States covered: {df['state_name'].nunique()}")
+
+# Top 10 most common skills — sanity check that parsing worked correctly
+print("\nTop 10 most common skills (sanity check):")
+print(df["skills_name"].explode().value_counts().head(10))
+```
+
+```{python}
+df.dtypes
+```
+
+## 12. Save the cleaned file
+
+```{python}
+# Convert list columns back to pipe-separated strings for CSV compatibility.
+# Each teammate's page will split them back into lists on load.
+df_out = df.copy()
+for col in ["skills_name", "specialized_skills_name", "software_skills_name"]:
+    if col in df_out.columns:
+        df_out[col] = df_out[col].apply(lambda lst: "|".join(lst) if isinstance(lst, list) else "")
+
+df_out.to_csv(OUT_PATH, index=False)
+print(f"Saved cleaned dataset to {OUT_PATH}")
+print(f"File size: {os.path.getsize(OUT_PATH) / 1e6:.1f} MB")
+```
+
+## How to use this in your research question page
+
+At the top of your `.qmd` file (e.g., `omar.qmd`, `industry_hiring.qmd`), load the cleaned file like this:
+
+```python
+import pandas as pd
+
+df = pd.read_csv("data/lightcast_cleaned.csv", parse_dates=["posted", "expired"])
+
+# Skills columns are stored as pipe-separated strings in the CSV — split back into lists:
+for col in ["skills_name", "specialized_skills_name", "software_skills_name"]:
+    if col in df.columns:
+        df[col] = df[col].fillna("").apply(lambda s: s.split("|") if s else [])
+```
+
+Every page now starts from the same cleaned foundation, and any future fix to the pipeline (done here in `data_cleaning.qmd`) propagates to the whole site on the next render.
